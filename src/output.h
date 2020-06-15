@@ -100,13 +100,13 @@ public:
 	static std::wstring read(const std::wstring& n) {return get(n)->read();}
 	static void target(const std::wstring& n, const std::wstring& t);
 	static void name(std::wstring n) { o_->name_ = n; }
-	static std::wstring named() { return o_->name_; }
+	static std::wstring named() { return o_ ? o_->name_ : L""; }
 private:
 	output *out_=0, *err_=0, *inf_=0, *dbg_=0, *ms_=0, *dump_=0;
 #ifdef WITH_THREADS
 	output *repl_=0;
 #endif
-	std::wstring name_ = L"";
+	std::wstring name_; // name of file outputs
 	static outputs* o_; // global outputs
 	p_output o_get(std::wstring n) {
 		auto it = find(n); return it != end() ? it->second.get() : 0; }

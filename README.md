@@ -42,7 +42,9 @@ The size of the universe (or domain of discourse) of a TML program is:
 * The maximum nonnegative integer that appears in the program (where the length
 of input strings counts as appearing in the program), plus
 * 256 if at least one character symbol is used in the program (or at least one
-string appears in the program).
+string appears in the program).<sup>[1](#foot1)</sup>   
+
+ 
 
 # Fixed Points
 
@@ -64,7 +66,8 @@ evaluated to `unsat`, as no fixed point exists.
 
 Note that only one of the two options can happen because the arity and the
 universe size are fixed. Ultimately, for universe size n and maximum arity k,
-they will occur in no more than 2^n^k steps.
+they will occur in no more than 2^n^k steps.<sup>[1](#foot1)</sup>  
+
 
 # Facts and Rules
 
@@ -377,6 +380,123 @@ by the productions
 It is possible to supply a first order formula which is then transformed into
 a TML program. TBD
 
+# Builtins
+
+Builtins are internally supported (e.g. compiled in<sup>[2](#foot2)</sup>) 
+functions<sup>[3](#foot3)</sup> which could appear in the head (left side) or as 
+a body (on the rigth-hand-side).  
+  
+Builtins are typically evaluated at each step (same as rules), but their nature 
+and impact could be very different. Some builtins (rhs) are compressed and 
+behave like any other relation, some decompress the data partially, some act
+like functions (e.g. [count](#count)). Head/lhs builtins behave like rules 
+(which they are) and evaluate only if the right side is true 
+(e.g. [lprint](#lprint), [halt](#halt), [fail](#fail)).<sup>[4](#foot4)</sup>  
+  
+Examples of builtins that are currently supported (still experimental):  
+
+##### count
+    individual(?x ?out) :- called(Earnest ?x), count(?x ?out), ?out = 1.
+count has to be preceded by a body/relation that we wish to take count of. Also 
+that relation should be the last relation (with count going after it).
+You can have relational/arithmetics ops after the count, like `== <=`.
+
+##### lprint
+    lprint("prefix..." ?x "...and..." ?y "...suffix.") :- r2(?x ?y).
+...meaning 'print for all ?x ?y that satisfy the r2'.  
+
+##### halt
+    halt("#r1>3") :- r1(?x ?y), count(?x ?y ?out), ?out>3.
+
+##### fail
+    fail("#r1 > 3" ?x ?y) :- r1(?x ?y), count(?x ?y ?out), ?out>3.
+
+
+# Variable Bits (and Dynamic Universe)
+
+Universe is no longer shared between the arguments 
+(one universe for the entire program with fixed number of bits 
+regardless of the argument type).  
+  
+Variable-bits (implementation) means each argument (?var or const) 
+is assigned optimal # of bits (bitness), its own base-type and universe.<sup>[5](#foot5)</sup>  
+
+Consequently universe is more strictly defined and constrained for specific 
+argument.
+  
+### Types  
+
+Types are defined on arguments: rule-argument, body/relation-argument or 
+anywhere that you have vars or consts.  
+  
+We can specify it manually: e.g.  
+`a(?x ?y ?z:int[2]) :- ...`  
+by adding the `:basetype[bitness]` where base-type is 
+`int | chr | str | NONE` (str stands for alphanumerics, symbols<sup>[6](#foot6)</sup>).  
+`NONE` means 'unspecified' and is an error condition (which could happen if 
+[type inference](#Type-Inference) was unable to deduce the type).  
+We can also specify it on consts e.g. `a(5:int[3] 2 1)`, which may look 
+superfluous but it can help if you only have facts and wish to constrain bits. 
+Bitness is optional, i.e. you can just specify the type (w/o bits), in which 
+case bits are [inferred](#Type-Inference).  
+  
+It's enough to specify the type only
+once per (rule, arg) (e.g. specify it only on one fact, or just in rule's head).  
+
+Args/Types are matched and grouped together (based on their dependencies) 
+and may point to the same underlying type/bitness. So you should avoid placing 
+conflicting types (bits can be different, max is used). E.g. this will fail...  
+
+    called(Earnest 5:int[3]).
+    surname(?x:str[5]) :- called(Earnest ?x).
+...as type(called,1) == type(surname,0)<sup>[7](#foot7)</sup>.  
+  
+Similarly, we don't have *casting* implemented at the moment, i.e. all dependent 
+types/args will be of the same type (max bitness is assumed).  
+  
+More advanced types & features are planned short-term, e.g. record-like custom 
+types `?x:Person` etc.
+  
+  
+### Type Inference  
+
+Generally, there's no need to manually specify types (only in special cases),
+as *type inference* should be able to decide what's best (both bitness and type).  
+
+That allows us to execute any old tml w/o any changes. 
+Inference is on by default.  
+  
+Ideally, you can mix things, use type inference for the bulk of it, and just 
+place 'hints' on certain types/args - 
+e.g. to increase bitness (you won't normally be able to make it smaller - 
+though it is possible with strange effects). This is the recommended approach.  
+  
+You can dump types by specifying `--dumptype`, to see how the types are 
+inferred. If you see `NONE` that means it's wrong, i.e. you'd need to supply 
+the type manually (only for the problematic args). That could happen for free 
+vars that don't relate to anything, or in case of new builtins (and features) 
+which don't yet have proper inference support.  
+  
+If you wish you can supply all the types manually and turn the inference off by 
+specifying `--no-inference` (note: that's not supported at the moment, i.e. 
+inference is mandatory). That's also not recommended as inference has almost no 
+impact on performance.   
+  
+### Dynamic Universe
+
+By dynamic universe (or 'dynamic bits'?<sup>[8](#foot8)</sup>) we assume 
+changing the bitness of an argument dynamically (i.e. from one step to another). 
+That means that we can increase the size of a specific argument's universe as 
+needed (keeping the size/bitness optimal at all times). This also allows for 
+various optimizations internally (varying var positions, bit order etc.).  
+  
+This is now fully supported and working but only for internal (dev) use. While 
+no support yet (for the user in tml), builtins are coming up that would enable 
+this.
+
+TBD  
+
+
 # Misc
 
 Comments are either C-style /* \*/ multiline comments, or # to comment till
@@ -399,3 +519,30 @@ TBD
 # Further Examples
 
 TBD
+
+***
+
+<a name="foot1">1</a>. 
+Universe is no longer 'uniform', it's defined per 'argument' so the above no 
+longer applies ('in the program' should be replaced with 'for an argument').
+This needs to be revised.    
+
+<a name="foot2">2</a>. Could also be imported from dll-s.   
+
+<a name="foot3">3</a>. Or relations, bodies?   
+
+<a name="foot4">4</a>. This requires some work (and better categorization).
+
+<a name="foot5">5</a>. Symbols are an exception as all symbols are still sharing 
+one universe (TBD).  
+  
+<a name="foot6">6</a>. `str` is somewhat misleading and the base-types will need 
+to be expanded to include both `str | sym`.  
+  
+<a name="foot7">7</a>. assuming 0-based arguments.  
+
+<a name="foot8">8</a>. which covers ability to change bit positions (not just 
+the size), and all this is basically part of the same feature.    
+
+
+

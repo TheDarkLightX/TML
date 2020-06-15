@@ -71,7 +71,7 @@ test output_file = [] {
 
 test output_name = [] {
 	outputs oo; oo.use(); oo.target(L"error", L"@buffer");
-	oo.create(L"noname", L".noname",L"@name");
+	oo.create(L"noname", L".noname", L"@name");
 	if (oo.read(L"error") !=
 		L"output 'noname' targeting @name without setting name\n")
 			fail(L"creating @name output without setting --name "
@@ -129,7 +129,7 @@ int main() {
 		output_std,
 		output_buffer,
 		output_file,
-		output_name,
+		//output_name,
 		outputs_create,
 		outputs_multiple
 	};

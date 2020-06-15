@@ -28,6 +28,7 @@ int main(int argc, char** argv) {
 	outputs oo;
 	options o(argc, argv, &oo);
 	bdd::init();
+	//o.parse(wstrings{ L"-autotype" }, true);
 	// read from stdin by default if no -i(e), -h, -v and no -repl/udp
 	if (o.disabled(L"i") && o.disabled(L"ie")
 #ifdef WITH_THREADS

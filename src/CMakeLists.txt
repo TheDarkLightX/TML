@@ -17,24 +17,33 @@ include(tml-common)
 
 set(TML_HEADERS
 	TML.h
+	addbits.h
 	bdd.h
+	bitsmeta.h
 	defs.h
 	dict.h
 	driver.h
 	err.h
+	form.h
+	infer_types.h
 	input.h
 	memory_map.h
 	options.h
 	output.h
 	tables.h
+	types.h
 )
 
 set(TML_SOURCES
+	addbits.cpp
 	bdd.cpp
 	bdd_ext.cpp
 	binary.cpp
+	bitsmeta.cpp
 	dict.cpp
 	driver.cpp
+	form.cpp
+	infer_types.cpp
 	input.cpp
 	options.cpp
 	output.cpp
@@ -45,6 +54,7 @@ set(TML_SOURCES
 	tables.cpp
 	tables_ext.cpp
 	transform.cpp
+	types.cpp
 	utils.cpp
 )
 

@@ -3,28 +3,29 @@
 rm -f output.test output.test.stdout output.test.stderr named.name1 named.name2 test.file
 ret=0
 
-sources=(utils.cpp dict.cpp input.cpp tables.cpp tables_ext.cpp
-	bdd.cpp bdd_ext.cpp)
-objects=(utils.o dict.o input.o tables.o tables_ext.o bdd.o bdd_ext.o)
-
+#sources=(utils.cpp dict.cpp input.cpp tables.cpp tables_ext.cpp
+#	bdd.cpp bdd_ext.cpp)
+#objects=(utils.o dict.o input.o tables.o tables_ext.o bdd.o bdd_ext.o)
+#
 #[[ -f tml.o ]] || \
-(
-	for S in "${sources[@]}"
-	do
-		# echo "$S"
-		g++ -c "../src/$S" \
-			-W -Wall -Wextra -Wpedantic \
-			-DGIT_DESCRIBED=1 -DGIT_COMMIT_HASH=1 -DGIT_BRANCH=1 \
-			-std=c++17 -O0 -DDEBUG -ggdb3
-	done
-	echo ${objects[@]} | xargs ld -o tml.o -relocatable # ld -relocatable
-	echo ${objects[@]} | xargs rm -f
-)
+#(
+#	for S in "${sources[@]}"
+#	do
+#		# echo "$S"
+#		g++ -c "../src/$S" \
+#			-W -Wall -Wextra -Wpedantic \
+#			-DGIT_DESCRIBED=1 -DGIT_COMMIT_HASH=1 -DGIT_BRANCH=1 \
+#			-std=c++17 -O0 -DDEBUG -ggdb3
+#	done
+#	echo ${objects[@]} | xargs ld -o tml.o -relocatable # ld -relocatable
+#	echo ${objects[@]} | xargs rm -f
+#)
 
-g++ output.test.cpp tml.o ../src/output.cpp \
+g++ output.test.cpp \
+	../build-Debug/libTML.a \
 	-W -Wall -Wextra -Wpedantic \
 	-DGIT_DESCRIBED=1 -DGIT_COMMIT_HASH=1 -DGIT_BRANCH=1 \
-	-std=c++17 -O0 -DDEBUG -ggdb3 -ooutput.test \
+	-std=c++17 -O0 -DDEBUG -ggdb3 -ooutput.test -lgcov \
 		&& ./output.test >output.test.stdout 2>output.test.stderr \
 		|| ( echo "output: failed"; ret=1 )
 

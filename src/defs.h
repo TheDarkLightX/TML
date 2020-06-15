@@ -28,6 +28,8 @@
 #endif
 #endif
 
+//#include "types.h"
+
 typedef int32_t int_t;
 typedef uint32_t uint_t;
 typedef std::vector<uint_t> uints;
@@ -61,6 +63,7 @@ typedef size_t nlevel;
 #define has(x, y) ((x).find(y) != (x).end())
 #define hasb(x, y) std::binary_search(x.begin(), x.end(), y)
 #define hasbc(x, y, f) std::binary_search(x.begin(), x.end(), y, f)
+#define hasf(x, y) (std::find((x).begin(), (x).end(), (y)) != (x).end())
 #define measure_time_start() start = clock()
 #define measure_time_end() end = clock(), \
 		o::ms() << std::fixed << std::setprecision(2) << \
@@ -89,5 +92,5 @@ typedef enum  {
 	NOP, ADD, SUB, MULT, BITWAND, BITWOR, BITWXOR, BITWNOT, SHR, SHL
 } t_arith_op;
 
-#endif
+#endif // __DEFS_H__
 //#define TRANSFORM_BIN_DRIVER

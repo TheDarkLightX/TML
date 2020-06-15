@@ -10,6 +10,8 @@
 // from the Author (Ohad Asor).
 // Contact ohad@idni.org for requesting a permission. This license may be
 // modified over time by the Author.
+#include "driver.h"
+#include "types.h"
 #include <iostream>
 #include <sstream>
 
@@ -290,7 +292,7 @@ wstring quote_sym(const elem& e) {
 	if (e.type == elem::SYM) {
 		bool q{false};
 		for (cws s = e.e[0]; s != e.e[1]; ++s) {
-			if (!q && !iswalnum(*s) && *s != L'_') {
+			if (!q && !iswalnum(*s) && *s != L'_' && !e.bitype.isCompound()) {
 				q = true;
 				os << L'"';
 			}
@@ -302,6 +304,17 @@ wstring quote_sym(const elem& e) {
 		else if (e.e[0] == e.e[1]) os << L"\"\"";
 	} else
 		os << e; // CHR, OPENP, CLOSEP or NUM = no quotes
+	////if (e.bitype.bitness != size_t(-1)) {
+	//if (e.bitype.get_bits() != size_t(-1)) {
+	//	os << e.bitype;
+	//	//switch (e.bitype.type) {
+	//	//	case base_type::CHR: os << L":chr"; break;
+	//	//	case base_type::STR: os << L":str"; break;
+	//	//	case base_type::INT: os << L":int"; break;
+	//	//	case base_type::NONE: os << L":none"; break;
+	//	//}
+	//	//os << L"[" << e.bitype.bitness << L"]";
+	//}
 	return os.str();
 }
 
